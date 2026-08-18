@@ -1,0 +1,37 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="indian-options-pricing",
+    version="0.1.0",
+    description="Options pricing engine for Indian markets",
+    author="Your Name",
+    author_email="your.email@example.com",
+    packages=find_packages(),
+    install_requires=[
+        "pandas>=1.5.0",
+        "numpy>=1.21.0",
+        "scipy>=1.9.0",
+        "yfinance>=0.1.87",
+        "nsepy>=0.8.0",
+        "py-vollib>=1.0.1",
+        "QuantLib-Python>=1.29",
+        "matplotlib>=3.5.0",
+        "seaborn>=0.11.0",
+        "plotly>=5.11.0",
+        "statsmodels>=0.13.0",
+        "scikit-learn>=1.1.0",
+        "jupyter>=1.0.0",
+        "pytest>=7.0.0",
+        "pyyaml>=6.0",
+        "requests>=2.28.0",
+    ],
+    python_requires=">=3.8",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Financial and Insurance Industry",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+    ],
+)

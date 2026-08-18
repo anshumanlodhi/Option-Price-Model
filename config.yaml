@@ -1,0 +1,204 @@
+# Indian Options Pricing Model Configuration
+# Project: NIFTY Options Pricing and Greeks Calculator
+# Author: IIT Bombay Student Project
+
+# =============================================================================
+# DATA COLLECTION PARAMETERS
+# =============================================================================
+data:
+  # Historical data date range
+  start_date: "2022-01-01"
+  end_date: "2024-12-31"
+
+  # Primary asset focus
+  symbols:
+    primary: "NIFTY"
+    nse_symbol: "NIFTY"
+    yahoo_symbol: "^NSEI"
+
+  # Data collection frequency
+  frequency: "daily" # End of day data
+  timezone: "Asia/Kolkata"
+
+# =============================================================================
+# OPTIONS SPECIFICATIONS
+# =============================================================================
+options:
+  # Expiry configuration
+  expiry_type: "monthly" # Monthly expiries only
+  expiry_day: "last_thursday" # NSE standard
+
+  # Strike range configuration
+  strike_range: 10 # ATM ± 10 strikes (21 total strikes)
+  strike_spacing: 50 # NIFTY standard strike spacing
+
+  # Option types to collect
+  option_types:
+    - "CE" # Call European
+    - "PE" # Put European
+
+  # Minimum time to expiry filter
+  min_dte: 1 # Minimum 1 day to expiry
+  max_dte: 60 # Maximum 60 days to expiry
+
+# =============================================================================
+# DATA SOURCES CONFIGURATION
+# =============================================================================
+sources:
+  # Primary data source
+  primary: "nsepy"
+
+  # Backup data sources
+  backup:
+    - "yfinance"
+    - "pandas_datareader"
+
+  # Risk-free rate source
+  risk_free_rate:
+    source: "rbi_historical"
+    api_url: "https://www.rbi.org.in"
+    parameter: "repo_rate"
+
+  # Volatility index
+  volatility_index:
+    symbol: "INDIAVIX"
+    source: "nsepy"
+
+# =============================================================================
+# FILE ORGANIZATION & STORAGE
+# =============================================================================
+storage:
+  # Data format
+  format: "csv"
+  encoding: "utf-8"
+
+  # File organization strategy
+  frequency: "monthly" # One file per month
+
+  # Directory structure
+  paths:
+    base: "data"
+    raw: "data/raw"
+    processed: "data/processed"
+    external: "data/external"
+
+  # File naming conventions
+  naming:
+    options_data: "nifty_options_{year}_{month:02d}.csv"
+    spot_data: "nifty_spot_{year}_{month:02d}.csv"
+    volatility_data: "india_vix_{year}_{month:02d}.csv"
+    risk_free_rates: "rbi_repo_rates_{year}.csv"
+
+  # Data compression
+  compression: null # No compression for learning phase
+
+# =============================================================================
+# MODEL PARAMETERS
+# =============================================================================
+model:
+  # Volatility calculation
+  volatility:
+    window: 30 # 30-day historical volatility
+    method: "log_returns" # Standard log returns method
+    annualization_factor: 252 # Trading days per year
+
+  # Risk-free rate defaults
+  risk_free_rate:
+    default: 0.065 # Current RBI repo rate as fallback
+    interpolation: "linear" # For missing rate data
+
+  # Dividend yield
+  dividend_yield: 0.0 # NIFTY index doesn't pay dividends
+
+  # Numerical precision
+  precision:
+    decimal_places: 6
+    float_format: "f64"
+
+# =============================================================================
+# CALCULATION PARAMETERS
+# =============================================================================
+calculations:
+  # Greeks calculation methods
+  greeks:
+    method: "analytical" # Primary method
+    numerical_method: "finite_difference" # Backup method
+    bump_size: 0.01 # For numerical calculations
+
+  # Black-Scholes parameters
+  black_scholes:
+    option_style: "european" # European options only
+    dividend_adjustment: true
+    early_exercise: false
+
+  # Monte Carlo settings (for future implementation)
+  monte_carlo:
+    simulations: 10000
+    time_steps: 252
+    random_seed: 42
+
+# =============================================================================
+# DATA VALIDATION RULES
+# =============================================================================
+validation:
+  # Data quality checks
+  quality_checks:
+    max_bid_ask_spread: 0.5 # Maximum spread as % of mid price
+    min_volume: 1 # Minimum daily volume
+    max_missing_data: 0.05 # Maximum 5% missing data tolerance
+
+  # Option data validation
+  options_validation:
+    max_strike_range: 20 # Maximum strikes from ATM
+    min_time_value: 0.01 # Minimum time value
+    max_moneyness: 2.0 # Maximum S/K ratio
+
+  # Volatility validation
+  volatility_validation:
+    min_volatility: 0.05 # 5% minimum volatility
+    max_volatility: 1.0 # 100% maximum volatility
+    outlier_threshold: 3.0 # Standard deviations for outlier detection
+
+# =============================================================================
+# DEVELOPMENT SETTINGS
+# =============================================================================
+development:
+  # Debugging options
+  debug: true
+  verbose_logging: true
+
+  # Performance settings
+  parallel_processing: false # Keep simple for learning
+  batch_size: 1000 # Records per batch
+
+  # Caching
+  cache_data: true
+  cache_duration: 3600 # 1 hour cache for API calls
+
+  # Rate limiting
+  api_rate_limit: 1.0 # 1 second between API calls
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/options_pricing.log"
+  max_file_size: "10MB"
+  backup_count: 5
+
+# =============================================================================
+# ALERTS AND NOTIFICATIONS
+# =============================================================================
+alerts:
+  # Data quality alerts
+  data_quality:
+    missing_data_threshold: 0.1
+    price_anomaly_threshold: 0.2
+    volume_anomaly_threshold: 0.5
+
+  # Model validation alerts
+  model_validation:
+    pricing_error_threshold: 0.05 # 5% pricing error
+    greeks_error_threshold: 0.1 # 10% greeks error
